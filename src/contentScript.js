@@ -1,43 +1,90 @@
 'use strict';
 
-// Content script file will run in the context of web page.
-// With content script you can manipulate the web pages using
-// Document Object Model (DOM).
-// You can also pass information to the parent extension.
+import md5 from 'crypto-js/md5';
 
-// We execute this script by making an entry in manifest.json file
-// under `content_scripts` property
+console.log('contentScript.js: start');
 
-// For more information on Content Scripts,
-// See https://developer.chrome.com/extensions/content_scripts
+const applyLabelsToLink = (hashes, link) => {
 
-// Log `title` of current active web page
-const pageTitle = document.head.getElementsByTagName('title')[0].innerHTML;
-console.log(
-  `Page title is: '${pageTitle}' - evaluated by Chrome extension's 'contentScript.js' file`
-);
-
-// Communicate with background file by sending a message
-chrome.runtime.sendMessage(
-  {
-    type: 'GREETINGS',
-    payload: {
-      message: 'Hello, my name is Con. I am from ContentScript.',
-    },
-  },
-  (response) => {
-    console.log(response.message);
+  if (link.getAttribute('data-linkslabeler') === 'true') {
+    return;
   }
-);
 
-// Listen for message
+  const linkHref = link.getAttribute('href');
+  const linkText = link.textContent;
+
+  const hashableLinkText = linkText.replace(/\s+/g, '');
+
+  const linkHrefHash = md5(linkHref).toString();
+  const linkTextHash = md5(hashableLinkText).toString();
+  const linkTotalHash = md5(linkHref + hashableLinkText).toString();
+
+  const labeling =
+    hashes[linkHrefHash] ||
+    hashes[linkTextHash] ||
+    hashes[linkTotalHash] ||
+    null;
+
+  if (labeling) {
+    link.setAttribute("data-linkslabeler", "true");
+
+    labeling.labels.forEach((label) => {
+      const labelElement = document.createElement('span');
+      labelElement.textContent = label.caption;
+      labelElement.classList.add(
+        'linklabeler-label',
+        'linklabeler-label-' + label.style
+      );
+
+      link.appendChild(labelElement);
+    });
+  }
+};
+
+const applyLabels = (hashes) => {
+  console.log('contentScript.js: applying labels');
+  const links = document.querySelectorAll('a');
+
+  links.forEach((link) => {
+    applyLabelsToLink(hashes, link);
+  });
+};
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'COUNT') {
-    console.log(`Current count is ${request.payload.count}`);
+  console.log('contentScript.js: message reseived ', request.type);
+
+  if (request.type === 'NOTIFICATION_HASHES_UPDATED') {
+    chrome.storage.local.get('hashes').then((result) => {
+      applyLabels(result.hashes);
+    });
+
+    sendResponse({ receiver: 'contentScript.js' });
+    return true;
   }
 
-  // Send an empty response
-  // See https://github.com/mozilla/webextension-polyfill/issues/130#issuecomment-531531890
-  sendResponse({});
+  sendResponse({ receiver: 'contentScript.js' });
   return true;
 });
+
+(async () => {
+  const gettingCurrentHashesResult = await chrome.storage.local.get('hashes');
+  const hashes = gettingCurrentHashesResult.hashes || {};
+  applyLabels(hashes);
+
+  var observer = new MutationObserver(function (mutations, observer) {
+    for (let mutation of mutations) {
+
+      if (mutation.type === "childList" && mutation.target.querySelectorAll) {
+        mutation.target.querySelectorAll('a').forEach((link) => {
+          applyLabelsToLink(hashes, link);
+        });
+      }
+
+    }
+  });
+
+  observer.observe(document, {
+    subtree: true,
+    childList: true,
+  });
+})();

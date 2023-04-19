@@ -1,0 +1,59 @@
+{
+	"version": 1,
+	"metadata": {
+		"test_page": "https://developer.chrome.com/docs/extensions/mv3/getstarted/extensions-101/"
+	},
+  "hashes": {
+    "4c4ad5fca2e7a3f74dbb1ced00381aa4": {
+			"metadata": {
+				"hash": {
+					"text": "HTML"
+				}
+			},
+			"labels": [
+				{
+					"caption": "Tech",
+					"style": "primary"
+				},
+				{
+					"caption": "No Programming",
+					"style": "info"
+				}
+			]
+		},
+    "2c56c360580420d293172f42d85dfbed": {
+			"metadata": {
+				"hash": {
+					"text": "CSS"
+				}
+			},
+			"labels": [
+				{
+					"caption": "Tech",
+					"style": "primary"
+				},
+				{
+					"caption": "No Programming",
+					"style": "info"
+				}
+			]
+		},
+		"faebb48ef0219efbcbeefc30917aaa67": {
+			"metadata": {
+				"hash": {
+					"href": "https://developer.mozilla.org/docs/Learn/JavaScript"
+				}
+			},
+			"labels": [
+				{
+					"caption": "Tech",
+					"style": "primary"
+				},
+				{
+					"caption": "Extenral Link",
+					"style": "danger"
+				}
+			]
+		}
+  }
+}

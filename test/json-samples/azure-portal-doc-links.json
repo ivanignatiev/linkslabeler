@@ -1,0 +1,21 @@
+{
+	"version": 1,
+	"metadata": {
+		"test_page": "https://learn.microsoft.com/en-us/azure/azure-portal/"
+	},
+  "hashes": {
+    "2fb3236222bc517b92ac826a339cbe7e": {
+			"metadata": {
+				"hash": {
+					"href": "azure-portal-overview"
+				}
+			},
+			"labels": [
+				{
+					"caption": "Good Start",
+					"style": "success"
+				}
+			]
+		}
+  }
+}
